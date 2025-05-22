@@ -1,5 +1,4 @@
 # Mobilemechanicmuscle
-
 This project uses Next.js with the App Router, TypeScript and Tailwind CSS. A form on the homepage collects service requests and sends the data to a configured email address through a serverless API route located at `app/api/send-form/route.ts`.
 
 ## Development
@@ -13,7 +12,7 @@ This project uses Next.js with the App Router, TypeScript and Tailwind CSS. A fo
    npm run dev
    ```
 3. Open [http://localhost:3000](http://localhost:3000) to see the form.
-   The application uses the `app` directory with a `layout.tsx` and `page.tsx`.
+The application uses the `app` directory with a `layout.tsx` and `page.tsx`.
 
 ## Environment Variables
 
