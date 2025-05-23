@@ -1,0 +1,149 @@
+[
+  {
+    "id": "1.0",
+    "name": "Project Setup & Core Layout",
+    "description": "Initialize repository, set up Next.js and Tailwind CSS, and create the shared header and footer layout.",
+    "category": "Half-Day 0.5: Repo + Tailwind setup + layout skeleton",
+    "status": "pending",
+    "subtasks": [
+      {
+        "id": "1.1",
+        "name": "Initialize Next.js Repository",
+        "description": "Run `pnpm create next-app@15` to set up the project.",
+        "status": "complete"
+      },
+      {
+        "id": "1.2",
+        "name": "Configure Tailwind CSS",
+        "description": "Add Tailwind CSS, PostCSS, and Autoprefixer to the project.",
+        "status": "complete"
+      },
+      {
+        "id": "1.3",
+        "name": "Create Shared Header and Footer",
+        "description": "Implement the common header and footer components for all pages.",
+        "status": "complete"
+      }
+    ]
+  },
+  {
+    "id": "2.0",
+    "name": "Home Page Development",
+    "description": "Complete the main landing page with all specified elements.",
+    "category": "Half-Day 0.5: Home page complete",
+    "status": "complete",
+    "subtasks": [
+      {
+        "id": "2.1",
+        "name": "Implement Hero Section",
+        "description": "Develop the hero section with a 12-word headline, sub-line, and a giant 'CALL NOW' tel: button.",
+        "status": "complete"
+      },
+      {
+        "id": "2.2",
+        "name": "Add Service Icons",
+        "description": "Integrate four service icons on the home page.",
+        "status": "complete"
+      },
+      {
+        "id": "2.3",
+        "name": "Include Testimonial",
+        "description": "Add one customer testimonial to the home page.",
+        "status": "complete"
+      },
+      {
+        "id": "2.4",
+        "name": "Display Trust-Badge Strip",
+        "description": "Implement a strip of trust badges.",
+        "status": "complete"
+      }
+    ]
+  },
+  {
+    "id": "3.0",
+    "name": "Services & About Pages Development",
+    "description": "Develop the dedicated services and about pages.",
+    "category": "Half-Day 0.5: Services & About pages",
+    "status": "complete",
+    "subtasks": [
+      {
+        "id": "3.1",
+        "name": "Develop Services Page",
+        "description": "Create the /services page with a grid or list of all services, 2-sentence blurbs, and icons.",
+        "status": "complete"
+      },
+      {
+        "id": "3.2",
+        "name": "Develop About Page",
+        "description": "Create the /about page with a 100-word story and a photo.",
+        "status": "complete"
+      }
+    ]
+  },
+  {
+    "id": "4.0",
+    "name": "Contact Page & Form Integration",
+    "description": "Build the contact page and integrate the lead capture form with Formspree.",
+    "category": "Half-Day 0.25: Contact page + Formspree hook",
+    "status": "complete",
+    "subtasks": [
+      {
+        "id": "4.1",
+        "name": "Develop Contact Form",
+        "description": "Create the contact form with fields for name, email, phone, and message.",
+        "status": "complete"
+      },
+      {
+        "id": "4.2",
+        "name": "Integrate Formspree Endpoint",
+        "description": "Configure the contact form to submit data to a Formspree endpoint.",
+        "status": "complete"
+      },
+      {
+        "id": "4.3",
+        "name": "Add Tap-to-Call & Tap-to-Text Buttons",
+        "description": "Include buttons for direct phone calls and text messages.",
+        "status": "complete"
+      },
+      {
+        "id": "4.4",
+        "name": "Include Static Map Screenshot",
+        "description": "Add a static screenshot of a map to the contact page.",
+        "status": "complete"
+      }
+    ]
+  },
+  {
+    "id": "5.0",
+    "name": "Quality Assurance & Deployment",
+    "description": "Perform final manual QA and deploy the application to Vercel.",
+    "category": "Half-Day 0.25: Manual eyeball QA, push to Vercel",
+    "status": "complete",
+    "subtasks": [
+      {
+        "id": "5.1",
+        "name": "Perform Manual Eyeball QA",
+        "description": "Visually inspect the site for any layout or functional issues, especially on iPhone 13 screen.",
+        "status": "complete"
+      },
+      {
+        "id": "5.2",
+        "name": "Deploy to Vercel",
+        "description": "Push the completed project to Vercel for live deployment.",
+        "status": "complete"
+      },
+      {
+        "id": "5.3",
+        "name": "Verify Hero Button Functionality",
+        "description": "Ensure the big hero button correctly initiates a phone call.",
+        "status": "complete"
+      },
+      {
+        "id": "5.4",
+        "name": "Verify Form Submission",
+        "description": "Confirm that the contact form submits successfully and displays 'Thanks—we’ll call you.'",
+        "status": "complete"
+      }
+    ]
+  }
+]

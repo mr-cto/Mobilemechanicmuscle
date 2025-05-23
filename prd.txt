@@ -1,0 +1,71 @@
+### Mobile Mechanic Muscle — **MVP-Only PRD (Latest-Stack Edition)**
+
+*(Ship fast, break nothing important)*
+
+---
+
+#### 1. What We’re Shipping
+
+A one-pager (plus bare-bones /services, /about, /contact routes) that does three things:
+
+1. **Screams the value prop**: “We come to you, we fix your car.”
+2. **Shoves a phone link in every visitor’s face.**
+3. **Captures form leads for the phone-shy.**
+
+That’s it. No metrics, no a11y audits, no tracking, no fancy flows.
+
+---
+
+#### 2. Pages & Must-Have Bits
+
+| Route         | Must-Haves                                                                                                                           |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| **/**         | Hero (12-word headline, sub-line, giant **CALL NOW** `tel:` button)  •  Four service icons  •  One testimonial  •  Trust-badge strip |
+| **/services** | Grid or list of all services, 2-sentence blurbs, icons                                                                               |
+| **/about**    | 100-word story + your photo                                                                                                          |
+| **/contact**  | Form (*name, email, phone, message*) → Formspree endpoint  •  Tap-to-call & tap-to-text buttons  •  Static map screenshot            |
+
+Header / footer shared; no other navigation.
+
+---
+
+#### 3. Tech Stack — **Freshest Stable Versions**
+
+| Layer     | Package & Version                              | Install                                               |
+| --------- | ---------------------------------------------- | ----------------------------------------------------- |
+| Framework | **Next.js 15.0.x** (App Router) ([Next.js][1]) | `pnpm create next-app@15`                             |
+| React     | Bundled (18)                                   | —                                                     |
+| Language  | TypeScript 5.5                                 | comes with CLI                                        |
+| CSS       | **Tailwind 4.1.x** ([GitHub][2])               | `pnpm add -D tailwindcss@latest postcss autoprefixer` |
+| Forms     | **Formik 2.4.6** (latest stable) ([GitHub][3]) | `pnpm add formik yup`                                 |
+| Icons     | react-icons ^5                                 | `pnpm add react-icons`                                |
+| Deploy    | Vercel (Node 20 runtime)                       | `git push` & go                                       |
+
+*(If you’d rather ditch Formik, drop in **react-hook-form** v7 instead—same idea, no code changes elsewhere.)*
+
+---
+
+#### 4. Build Plan — 2 Day Sprint
+
+| Half-Day | What Happens                            |
+| -------- | --------------------------------------- |
+| 0.5      | Repo + Tailwind setup + layout skeleton |
+| 0.5      | Home page complete                      |
+| 0.5      | Services & About pages                  |
+| 0.25     | Contact page + Formspree hook           |
+| 0.25     | Manual eyeball QA, push to Vercel       |
+
+---
+
+#### 5. Definition of “Done”
+
+* Site is live on Vercel.
+* Big hero button rings the right phone.
+* Form submits and shows “Thanks—we’ll call you.”
+* Doesn’t look busted on an iPhone 13 screen.
+
+Everything else—analytics, accessibility, automated tests, CMS, bookings—belongs to Phase 2. For now, cowboy up and ship. 🤠
+
+[1]: https://nextjs.org/blog/next-15?utm_source=chatgpt.com "Next.js 15"
+[2]: https://github.com/tailwindlabs/tailwindcss/releases?utm_source=chatgpt.com "Releases · tailwindlabs/tailwindcss - GitHub"
+[3]: https://github.com/jaredpalmer/formik/releases?utm_source=chatgpt.com "Releases · jaredpalmer/formik - GitHub"
