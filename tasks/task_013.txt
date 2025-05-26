@@ -1,0 +1,76 @@
+# Task ID: 13
+# Title: Implement API Routes for Data Access
+# Status: pending
+# Dependencies: 2, 3
+# Priority: high
+# Description: Create API routes for accessing and manipulating data for services, bookings, vehicles, and user information.
+# Details:
+1. Create API routes in the `app/api` directory:
+   - `/api/services`: GET all services
+   - `/api/bookings`: GET, POST for user bookings
+   - `/api/bookings/[id]`: GET, PATCH, DELETE for specific booking
+   - `/api/vehicles`: GET, POST for user vehicles
+   - `/api/vehicles/[id]`: GET, PATCH, DELETE for specific vehicle
+   - `/api/availability`: GET available time slots
+   - `/api/admin/bookings`: Admin-only routes for managing all bookings
+2. Implement proper authentication and authorization checks
+3. Add error handling and validation
+4. Use Drizzle ORM for database operations
+
+Example API route implementation:
+```javascript
+// app/api/vehicles/route.js
+import { NextResponse } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/app/api/auth/[...nextauth]/route';
+import { db } from '@/lib/db';
+import { vehicles } from '@/db/schema';
+import { eq } from 'drizzle-orm';
+
+export async function GET() {
+  const session = await getServerSession(authOptions);
+  
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  
+  try {
+    const userVehicles = await db.select().from(vehicles).where(eq(vehicles.userId, session.user.id));
+    return NextResponse.json({ vehicles: userVehicles });
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to fetch vehicles' }, { status: 500 });
+  }
+}
+
+export async function POST(request) {
+  const session = await getServerSession(authOptions);
+  
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  
+  try {
+    const data = await request.json();
+    
+    // Validate required fields
+    if (!data.make || !data.model || !data.year) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    }
+    
+    const newVehicle = await db.insert(vehicles).values({
+      userId: session.user.id,
+      make: data.make,
+      model: data.model,
+      year: data.year,
+      licensePlate: data.licensePlate || null
+    }).returning();
+    
+    return NextResponse.json({ vehicle: newVehicle[0] }, { status: 201 });
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to create vehicle' }, { status: 500 });
+  }
+}
+```
+
+# Test Strategy:
+Test all API endpoints with valid and invalid data. Verify authentication and authorization checks work correctly. Test error handling for various scenarios. Ensure proper HTTP status codes are returned. Test rate limiting if implemented.

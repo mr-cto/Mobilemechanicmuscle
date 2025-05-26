@@ -1,0 +1,49 @@
+# Task ID: 1
+# Title: Database Setup with PostgreSQL and Drizzle ORM
+# Status: pending
+# Dependencies: None
+# Priority: high
+# Description: Set up PostgreSQL database using Vercel Postgres and configure Drizzle ORM for data modeling and querying
+# Details:
+1. Install required packages: `pnpm add @vercel/postgres drizzle-orm`
+2. Create database schema models for:
+   - Users (id, name, email, password, created_at)
+   - Vehicles (id, user_id, make, model, year, notes)
+   - Services (id, name, description, estimated_price, duration)
+   - Bookings (id, user_id, vehicle_id, service_id, date, time, status)
+3. Set up Drizzle configuration in a `db/index.ts` file
+4. Create migration scripts for initial schema
+5. Configure environment variables for database connection
+6. Create utility functions for common database operations
+
+Example schema definition:
+```typescript
+// db/schema.ts
+import { pgTable, serial, text, timestamp, integer, decimal } from 'drizzle-orm/pg-core';
+
+export const users = pgTable('users', {
+  id: serial('id').primaryKey(),
+  name: text('name').notNull(),
+  email: text('email').notNull().unique(),
+  password: text('password').notNull(),
+  createdAt: timestamp('created_at').defaultNow()
+});
+
+export const vehicles = pgTable('vehicles', {
+  id: serial('id').primaryKey(),
+  userId: integer('user_id').references(() => users.id),
+  make: text('make').notNull(),
+  model: text('model').notNull(),
+  year: integer('year').notNull(),
+  notes: text('notes')
+});
+
+// Additional tables for services and bookings
+```
+
+# Test Strategy:
+1. Write unit tests for database connection and basic CRUD operations
+2. Test schema migrations to ensure they apply correctly
+3. Verify foreign key constraints work as expected
+4. Test database queries with sample data
+5. Ensure proper error handling for database operations

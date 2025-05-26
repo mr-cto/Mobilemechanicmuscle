@@ -1,0 +1,153 @@
+# Task ID: 6
+# Title: Online Booking System Backend
+# Status: pending
+# Dependencies: 1, 2, 3, 5
+# Priority: high
+# Description: Implement API endpoints for handling booking creation, availability checking, and booking management
+# Details:
+1. Create API endpoint for booking creation
+2. Implement availability checking logic
+3. Add booking validation and conflict prevention
+4. Create endpoints for retrieving and updating bookings
+5. Implement booking confirmation notifications (optional)
+
+Example booking API implementation:
+```typescript
+// app/api/bookings/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { db } from '@/db';
+import { bookings, vehicles } from '@/db/schema';
+import { auth } from '@/auth';
+import { z } from 'zod';
+
+const bookingSchema = z.object({
+  serviceId: z.number(),
+  date: z.string().refine(val => !isNaN(Date.parse(val))),
+  time: z.string().regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/),
+  vehicleId: z.number().optional(),
+  vehicle: z.object({
+    make: z.string().min(1),
+    model: z.string().min(1),
+    year: z.number().min(1900).max(new Date().getFullYear() + 1),
+    notes: z.string().optional()
+  }).optional()
+});
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    const body = await request.json();
+    const validatedData = bookingSchema.parse(body);
+    
+    // Check if the requested time slot is available
+    const bookingDate = new Date(`${validatedData.date}T${validatedData.time}`);
+    const existingBookings = await db.query.bookings.findMany({
+      where: {
+        date: bookingDate.toISOString().split('T')[0],
+        time: validatedData.time
+      }
+    });
+    
+    if (existingBookings.length > 0) {
+      return NextResponse.json({ error: 'Time slot not available' }, { status: 400 });
+    }
+    
+    // Handle vehicle creation or selection
+    let vehicleId = validatedData.vehicleId;
+    
+    if (!vehicleId && validatedData.vehicle) {
+      // Create a new vehicle
+      const newVehicle = await db.insert(vehicles).values({
+        userId: session.user.id,
+        make: validatedData.vehicle.make,
+        model: validatedData.vehicle.model,
+        year: validatedData.vehicle.year,
+        notes: validatedData.vehicle.notes || ''
+      }).returning({ id: vehicles.id });
+      
+      vehicleId = newVehicle[0].id;
+    }
+    
+    if (!vehicleId) {
+      return NextResponse.json({ error: 'Vehicle information required' }, { status: 400 });
+    }
+    
+    // Create the booking
+    const newBooking = await db.insert(bookings).values({
+      userId: session.user.id,
+      vehicleId,
+      serviceId: validatedData.serviceId,
+      date: bookingDate.toISOString().split('T')[0],
+      time: validatedData.time,
+      status: 'pending'
+    }).returning({ id: bookings.id });
+    
+    return NextResponse.json({ id: newBooking[0].id });
+  } catch (error) {
+    console.error('Booking error:', error);
+    return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+  }
+}
+
+export async function GET(request: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+    
+    if (id) {
+      // Get specific booking
+      const booking = await db.query.bookings.findFirst({
+        where: {
+          id: parseInt(id),
+          userId: session.user.id
+        },
+        with: {
+          service: true,
+          vehicle: true
+        }
+      });
+      
+      if (!booking) {
+        return NextResponse.json({ error: 'Booking not found' }, { status: 404 });
+      }
+      
+      return NextResponse.json(booking);
+    } else {
+      // Get all user bookings
+      const userBookings = await db.query.bookings.findMany({
+        where: {
+          userId: session.user.id
+        },
+        with: {
+          service: true,
+          vehicle: true
+        },
+        orderBy: (bookings, { desc }) => [desc(bookings.date)]
+      });
+      
+      return NextResponse.json(userBookings);
+    }
+  } catch (error) {
+    console.error('Error fetching bookings:', error);
+    return NextResponse.json({ error: 'Server error' }, { status: 500 });
+  }
+}
+```
+
+# Test Strategy:
+1. Test booking creation with valid and invalid data
+2. Verify availability checking prevents double bookings
+3. Test vehicle creation during booking process
+4. Verify booking retrieval for authenticated users
+5. Test booking status updates
+6. Ensure proper error handling and validation
+7. Test API security to prevent unauthorized access

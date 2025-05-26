@@ -1,0 +1,68 @@
+# Task ID: 12
+# Title: Update Homepage with New Features
+# Status: pending
+# Dependencies: 7, 8
+# Priority: low
+# Description: Update the homepage to highlight online booking and promote new features like user accounts and the service catalog.
+# Details:
+1. Update hero section to highlight online booking
+2. Add feature section showcasing new capabilities:
+   - Online booking system
+   - User accounts and dashboard
+   - Detailed service catalog
+3. Add prominent call-to-action buttons for booking and account creation
+4. Ensure responsive design for all screen sizes
+
+Example hero section update:
+```jsx
+export default function Hero() {
+  return (
+    <div className="relative bg-gray-900 text-white">
+      <div className="container mx-auto px-4 py-24 sm:py-32">
+        <div className="max-w-2xl">
+          <h1 className="text-4xl sm:text-5xl font-bold mb-6">Mobile Auto Repair, Now Even Easier</h1>
+          <p className="text-xl mb-8">Book your appointment online in minutes. Our certified mechanics come to you, wherever you are.</p>
+          <div className="flex flex-wrap gap-4">
+            <Button size="lg" asChild>
+              <Link href="/book">Book Online Now</Link>
+            </Button>
+            <Button size="lg" variant="outline" asChild>
+              <Link href="/services">View Services</Link>
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export function FeatureSection() {
+  return (
+    <div className="bg-white py-16">
+      <div className="container mx-auto px-4">
+        <h2 className="text-3xl font-bold text-center mb-12">New Ways to Make Car Repair Easier</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <FeatureCard 
+            icon={<CalendarIcon className="h-10 w-10" />}
+            title="Online Booking"
+            description="Schedule your appointment online anytime, day or night. Choose the service and time that works for you."
+          />
+          <FeatureCard 
+            icon={<UserIcon className="h-10 w-10" />}
+            title="User Accounts"
+            description="Create an account to manage your vehicles, view service history, and track upcoming appointments."
+          />
+          <FeatureCard 
+            icon={<ListIcon className="h-10 w-10" />}
+            title="Service Catalog"
+            description="Browse our comprehensive service catalog with detailed descriptions and pricing information."
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+# Test Strategy:
+Test homepage on various devices to ensure responsive design. Verify all links to new features work correctly. Test call-to-action buttons lead to the correct pages. Ensure new content is visually appealing and consistent with existing design.

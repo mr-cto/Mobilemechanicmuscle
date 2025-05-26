@@ -1,0 +1,181 @@
+# Task ID: 7
+# Title: Admin Dashboard Implementation
+# Status: pending
+# Dependencies: 1, 6
+# Priority: medium
+# Description: Create a basic admin dashboard for internal staff to view and manage bookings
+# Details:
+1. Create admin dashboard page at `/admin/dashboard`
+2. Implement booking list view with filtering options
+3. Add booking status management functionality
+4. Create admin authentication/authorization
+5. Add basic analytics (optional)
+
+Example admin dashboard implementation:
+```tsx
+// app/admin/dashboard/page.tsx
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
+import { db } from '@/db';
+import { bookings, users } from '@/db/schema';
+import { eq } from 'drizzle-orm/expressions';
+import { format } from 'date-fns';
+import { BookingStatusSelect } from '@/components/admin/BookingStatusSelect';
+import { DataTable } from '@/components/ui/data-table';
+
+async function isAdmin(userId: string) {
+  const user = await db.query.users.findFirst({
+    where: eq(users.id, userId)
+  });
+  
+  return user?.role === 'admin';
+}
+
+export default async function AdminDashboard() {
+  const session = await auth();
+  
+  if (!session?.user) {
+    redirect('/account/login?callbackUrl=/admin/dashboard');
+  }
+  
+  const isUserAdmin = await isAdmin(session.user.id);
+  if (!isUserAdmin) {
+    redirect('/');
+  }
+  
+  const allBookings = await db.query.bookings.findMany({
+    with: {
+      user: true,
+      service: true,
+      vehicle: true
+    },
+    orderBy: (bookings, { desc }) => [desc(bookings.date)]
+  });
+  
+  const columns = [
+    {
+      accessorKey: 'id',
+      header: 'ID'
+    },
+    {
+      accessorKey: 'user.name',
+      header: 'Customer'
+    },
+    {
+      accessorKey: 'service.name',
+      header: 'Service'
+    },
+    {
+      accessorKey: 'date',
+      header: 'Date',
+      cell: ({ row }) => format(new Date(row.original.date), 'MMM dd, yyyy')
+    },
+    {
+      accessorKey: 'time',
+      header: 'Time'
+    },
+    {
+      accessorKey: 'vehicle',
+      header: 'Vehicle',
+      cell: ({ row }) => `${row.original.vehicle.year} ${row.original.vehicle.make} ${row.original.vehicle.model}`
+    },
+    {
+      accessorKey: 'status',
+      header: 'Status',
+      cell: ({ row }) => (
+        <BookingStatusSelect 
+          bookingId={row.original.id} 
+          initialStatus={row.original.status} 
+        />
+      )
+    }
+  ];
+  
+  return (
+    <div className="container mx-auto py-8">
+      <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
+      
+      <div className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-xl font-semibold mb-4">All Bookings</h2>
+        <DataTable columns={columns} data={allBookings} />
+      </div>
+    </div>
+  );
+}
+```
+
+Example booking status update component:
+```tsx
+// components/admin/BookingStatusSelect.tsx
+'use client';
+
+import { useState } from 'react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from '@/components/ui/use-toast';
+
+interface BookingStatusSelectProps {
+  bookingId: number;
+  initialStatus: string;
+}
+
+export function BookingStatusSelect({ bookingId, initialStatus }: BookingStatusSelectProps) {
+  const [status, setStatus] = useState(initialStatus);
+  const [isUpdating, setIsUpdating] = useState(false);
+  
+  const updateStatus = async (newStatus: string) => {
+    setIsUpdating(true);
+    
+    try {
+      const response = await fetch(`/api/admin/bookings/${bookingId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+      
+      if (!response.ok) throw new Error('Failed to update status');
+      
+      setStatus(newStatus);
+      toast({
+        title: 'Status updated',
+        description: `Booking #${bookingId} status changed to ${newStatus}`
+      });
+    } catch (error) {
+      console.error('Status update error:', error);
+      toast({
+        title: 'Update failed',
+        description: 'Could not update booking status',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+  
+  return (
+    <Select
+      value={status}
+      onValueChange={updateStatus}
+      disabled={isUpdating}
+    >
+      <SelectTrigger className="w-32">
+        <SelectValue placeholder="Status" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="pending">Pending</SelectItem>
+        <SelectItem value="confirmed">Confirmed</SelectItem>
+        <SelectItem value="in-progress">In Progress</SelectItem>
+        <SelectItem value="completed">Completed</SelectItem>
+        <SelectItem value="cancelled">Cancelled</SelectItem>
+      </SelectContent>
+    </Select>
+  );
+}
+```
+
+# Test Strategy:
+1. Test admin authentication and authorization
+2. Verify booking list displays correctly with all relevant information
+3. Test booking status updates
+4. Verify filtering and sorting functionality
+5. Test responsive design for admin dashboard
+6. Ensure non-admin users cannot access the dashboard

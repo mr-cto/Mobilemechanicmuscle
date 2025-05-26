@@ -1,0 +1,80 @@
+# Task ID: 2
+# Title: Authentication System with NextAuth.js
+# Status: pending
+# Dependencies: 1
+# Priority: high
+# Description: Implement user authentication using NextAuth.js v5 beta with email/password login and registration
+# Details:
+1. Install NextAuth.js: `pnpm add next-auth@beta`
+2. Configure NextAuth.js in `app/api/auth/[...nextauth]/route.ts`
+3. Set up authentication providers (credentials provider for email/password)
+4. Create login and registration forms using shadcn/ui components
+5. Implement password hashing using bcrypt
+6. Set up session management and protected routes
+7. Create authentication hooks for client components
+
+Example NextAuth configuration:
+```typescript
+// app/api/auth/[...nextauth]/route.ts
+import NextAuth from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import { compare } from 'bcrypt';
+import { db } from '@/db';
+import { users } from '@/db/schema';
+import { eq } from 'drizzle-orm/expressions';
+
+export const authOptions = {
+  providers: [
+    CredentialsProvider({
+      name: 'Credentials',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) return null;
+        
+        const user = await db.query.users.findFirst({
+          where: eq(users.email, credentials.email)
+        });
+        
+        if (!user) return null;
+        
+        const passwordMatch = await compare(credentials.password, user.password);
+        if (!passwordMatch) return null;
+        
+        return { id: user.id, name: user.name, email: user.email };
+      }
+    })
+  ],
+  callbacks: {
+    async session({ session, token }) {
+      if (token) {
+        session.user.id = token.id;
+      }
+      return session;
+    },
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    }
+  },
+  pages: {
+    signIn: '/account/login',
+    signUp: '/account/signup'
+  }
+};
+
+const handler = NextAuth(authOptions);
+export { handler as GET, handler as POST };
+```
+
+# Test Strategy:
+1. Test user registration flow with valid and invalid inputs
+2. Test login functionality with correct and incorrect credentials
+3. Verify session persistence across page reloads
+4. Test protected routes to ensure they redirect unauthenticated users
+5. Verify logout functionality
+6. Test password reset flow if implemented

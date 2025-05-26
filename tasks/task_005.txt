@@ -1,0 +1,134 @@
+# Task ID: 5
+# Title: Online Booking System Frontend
+# Status: pending
+# Dependencies: 1, 2, 4
+# Priority: high
+# Description: Create a multi-step booking form allowing users to select services, choose date/time, and enter vehicle details
+# Details:
+1. Design multi-step booking form with the following steps:
+   - Service selection
+   - Date and time selection
+   - Vehicle details (if not logged in)
+   - Confirmation
+2. Implement form state management using React Hook Form
+3. Add validation for all form fields
+4. Create date/time picker using date-fns and shadcn/ui components
+5. Implement responsive design for all form steps
+
+Example booking form implementation:
+```tsx
+// app/book/page.tsx
+'use client';
+
+import { useState } from 'react';
+import { useForm, FormProvider } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { ServiceSelection } from '@/components/booking/ServiceSelection';
+import { DateTimeSelection } from '@/components/booking/DateTimeSelection';
+import { VehicleDetails } from '@/components/booking/VehicleDetails';
+import { BookingConfirmation } from '@/components/booking/BookingConfirmation';
+import { useSession } from 'next-auth/react';
+
+const bookingSchema = z.object({
+  serviceId: z.number(),
+  date: z.date(),
+  time: z.string(),
+  vehicleId: z.number().optional(),
+  vehicle: z.object({
+    make: z.string().min(1),
+    model: z.string().min(1),
+    year: z.number().min(1900).max(new Date().getFullYear() + 1),
+    notes: z.string().optional()
+  }).optional()
+});
+
+type BookingFormData = z.infer<typeof bookingSchema>;
+
+export default function BookingPage() {
+  const [step, setStep] = useState(1);
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const { data: session } = useSession();
+  
+  const methods = useForm<BookingFormData>({
+    resolver: zodResolver(bookingSchema),
+    defaultValues: {
+      serviceId: searchParams.get('service') ? parseInt(searchParams.get('service')!) : undefined
+    }
+  });
+  
+  const onSubmit = async (data: BookingFormData) => {
+    try {
+      const response = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      });
+      
+      if (!response.ok) throw new Error('Failed to create booking');
+      
+      const result = await response.json();
+      router.push(`/account/dashboard?booking=${result.id}`);
+    } catch (error) {
+      console.error('Booking error:', error);
+    }
+  };
+  
+  return (
+    <div className="container mx-auto py-8">
+      <h1 className="text-3xl font-bold mb-6">Book a Service</h1>
+      
+      <div className="flex justify-between mb-8">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className={`step ${i <= step ? 'active' : ''}`}>
+            Step {i}
+          </div>
+        ))}
+      </div>
+      
+      <FormProvider {...methods}>
+        <form onSubmit={methods.handleSubmit(onSubmit)}>
+          {step === 1 && (
+            <ServiceSelection 
+              onNext={() => setStep(2)} 
+            />
+          )}
+          
+          {step === 2 && (
+            <DateTimeSelection 
+              onBack={() => setStep(1)} 
+              onNext={() => setStep(3)} 
+            />
+          )}
+          
+          {step === 3 && (
+            <VehicleDetails 
+              isLoggedIn={!!session} 
+              onBack={() => setStep(2)} 
+              onNext={() => setStep(4)} 
+            />
+          )}
+          
+          {step === 4 && (
+            <BookingConfirmation 
+              onBack={() => setStep(3)} 
+            />
+          )}
+        </form>
+      </FormProvider>
+    </div>
+  );
+}
+```
+
+# Test Strategy:
+1. Test form validation for all fields
+2. Verify multi-step navigation works correctly
+3. Test date/time selection with valid and invalid inputs
+4. Ensure vehicle selection works for logged-in users
+5. Test vehicle details form for non-logged-in users
+6. Verify form submission and error handling
+7. Test responsive design across device sizes

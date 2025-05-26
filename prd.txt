@@ -1,71 +1,63 @@
-### Mobile Mechanic Muscle — **MVP-Only PRD (Latest-Stack Edition)**
+### Mobile Mechanic Muscle — **Phase 2 PRD: Enhanced User Experience & Service Management**
 
-*(Ship fast, break nothing important)*
+*(Building on MVP success, focusing on scalability and customer self-service)*
 
 ---
 
 #### 1. What We’re Shipping
 
-A one-pager (plus bare-bones /services, /about, /contact routes) that does three things:
+An enhanced web application that provides:
 
-1. **Screams the value prop**: “We come to you, we fix your car.”
-2. **Shoves a phone link in every visitor’s face.**
-3. **Captures form leads for the phone-shy.**
-
-That’s it. No metrics, no a11y audits, no tracking, no fancy flows.
+1.  **Online Booking System**: Allow users to schedule appointments directly through the website.
+2.  **User Accounts**: Enable customers to manage their vehicles, view service history, and track appointments.
+3.  **Detailed Service Catalog**: Provide comprehensive information on all available services with pricing estimates.
+4.  **Admin Dashboard (Basic)**: A simple interface for internal staff to view and manage bookings.
 
 ---
 
 #### 2. Pages & Must-Have Bits
 
-| Route         | Must-Haves                                                                                                                           |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| **/**         | Hero (12-word headline, sub-line, giant **CALL NOW** `tel:` button)  •  Four service icons  •  One testimonial  •  Trust-badge strip |
-| **/services** | Grid or list of all services, 2-sentence blurbs, icons                                                                               |
-| **/about**    | 100-word story + your photo                                                                                                          |
-| **/contact**  | Form (*name, email, phone, message*) → Formspree endpoint  •  Tap-to-call & tap-to-text buttons  •  Static map screenshot            |
-
-Header / footer shared; no other navigation.
+| Route             | Must-Haves                                                                                                                            |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| **/**             | Update hero to highlight online booking  •  Promote new features (booking, accounts)  •  Link to full service catalog                 |
+| **/services**     | Detailed service cards with descriptions, estimated pricing, and "Book Now" buttons                                                   |
+| **/account/login**| User login form                                                                                                                       |
+| **/account/signup**| User registration form                                                                                                                |
+| **/account/dashboard**| User-specific dashboard: view upcoming appointments, service history, vehicle management                                            |
+| **/book**         | Multi-step booking form: select service, choose date/time, enter vehicle details (if not logged in), confirm                               |
+| **/admin/dashboard**| Basic admin view: list all bookings, change booking status (e.g., pending, confirmed, completed)                                      |
 
 ---
 
-#### 3. Tech Stack — **Freshest Stable Versions**
+#### 3. Tech Stack Additions
 
 | Layer     | Package & Version                              | Install                                               |
 | --------- | ---------------------------------------------- | ----------------------------------------------------- |
-| Framework | **Next.js 15.0.x** (App Router) ([Next.js][1]) | `pnpm create next-app@15`                             |
-| React     | Bundled (18)                                   | —                                                     |
-| Language  | TypeScript 5.5                                 | comes with CLI                                        |
-| CSS       | **Tailwind 4.1.x** ([GitHub][2])               | `pnpm add -D tailwindcss@latest postcss autoprefixer` |
-| Forms     | **Formik 2.4.6** (latest stable) ([GitHub][3]) | `pnpm add formik yup`                                 |
-| Icons     | react-icons ^5                                 | `pnpm add react-icons`                                |
-| Deploy    | Vercel (Node 20 runtime)                       | `git push` & go                                       |
-
-*(If you’d rather ditch Formik, drop in **react-hook-form** v7 instead—same idea, no code changes elsewhere.)*
+| Database  | **PostgreSQL** (via Vercel Postgres)           | `pnpm add @vercel/postgres`                           |
+| ORM       | **Drizzle ORM**                                | `pnpm add drizzle-orm @vercel/postgres`               |
+| Auth      | **NextAuth.js** (v5 beta)                      | `pnpm add next-auth@beta`                             |
+| Date/Time | **date-fns**                                   | `pnpm add date-fns`                                   |
+| UI        | **shadcn/ui** (for forms, modals, tables)      | `npx shadcn-ui@latest init` then `npx shadcn-ui@latest add ...` |
 
 ---
 
-#### 4. Build Plan — 2 Day Sprint
+#### 4. Build Plan — 4 Day Sprint
 
-| Half-Day | What Happens                            |
-| -------- | --------------------------------------- |
-| 0.5      | Repo + Tailwind setup + layout skeleton |
-| 0.5      | Home page complete                      |
-| 0.5      | Services & About pages                  |
-| 0.25     | Contact page + Formspree hook           |
-| 0.25     | Manual eyeball QA, push to Vercel       |
+| Half-Day | What Happens                                    |
+| -------- | ----------------------------------------------- |
+| 1.0      | Database setup (Postgres, Drizzle)              |
+| 1.0      | Authentication (NextAuth.js)                    |
+| 1.0      | User Account features (dashboard, vehicle mgmt) |
+| 1.0      | Online Booking System (frontend & backend)      |
+| 0.5      | Detailed Service Catalog                        |
+| 0.5      | Basic Admin Dashboard                           |
+| 1.0      | Integration & QA                                |
 
 ---
 
 #### 5. Definition of “Done”
 
-* Site is live on Vercel.
-* Big hero button rings the right phone.
-* Form submits and shows “Thanks—we’ll call you.”
-* Doesn’t look busted on an iPhone 13 screen.
-
-Everything else—analytics, accessibility, automated tests, CMS, bookings—belongs to Phase 2. For now, cowboy up and ship. 🤠
-
-[1]: https://nextjs.org/blog/next-15?utm_source=chatgpt.com "Next.js 15"
-[2]: https://github.com/tailwindlabs/tailwindcss/releases?utm_source=chatgpt.com "Releases · tailwindlabs/tailwindcss - GitHub"
-[3]: https://github.com/jaredpalmer/formik/releases?utm_source=chatgpt.com "Releases · jaredpalmer/formik - GitHub"
+*   Users can create accounts, log in, and view their service history.
+*   Users can book a service online, selecting date, time, and service type.
+*   Admin can view all bookings and update their status.
+*   All new features are responsive and integrated seamlessly with existing MVP.

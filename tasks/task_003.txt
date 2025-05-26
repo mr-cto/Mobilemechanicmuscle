@@ -1,0 +1,88 @@
+# Task ID: 3
+# Title: User Account Management
+# Status: pending
+# Dependencies: 1, 2
+# Priority: medium
+# Description: Create user dashboard and account management features including vehicle management and service history viewing
+# Details:
+1. Create account dashboard page at `/account/dashboard`
+2. Implement vehicle management section:
+   - Add new vehicle form
+   - List existing vehicles
+   - Edit/delete vehicle functionality
+3. Create service history section showing past bookings
+4. Add upcoming appointments section
+5. Implement account settings (name, email, password update)
+
+Example dashboard layout:
+```tsx
+// app/account/dashboard/page.tsx
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
+import { db } from '@/db';
+import { vehicles, bookings, services } from '@/db/schema';
+import { eq } from 'drizzle-orm/expressions';
+import { VehicleList } from '@/components/account/VehicleList';
+import { BookingHistory } from '@/components/account/BookingHistory';
+import { UpcomingAppointments } from '@/components/account/UpcomingAppointments';
+
+export default async function Dashboard() {
+  const session = await auth();
+  
+  if (!session?.user) {
+    redirect('/account/login');
+  }
+  
+  const userVehicles = await db.query.vehicles.findMany({
+    where: eq(vehicles.userId, session.user.id)
+  });
+  
+  const userBookings = await db.query.bookings.findMany({
+    where: eq(bookings.userId, session.user.id),
+    with: {
+      service: true,
+      vehicle: true
+    },
+    orderBy: (bookings, { desc }) => [desc(bookings.date)]
+  });
+  
+  const upcomingBookings = userBookings.filter(booking => 
+    new Date(booking.date) >= new Date() && booking.status !== 'completed'
+  );
+  
+  const pastBookings = userBookings.filter(booking => 
+    new Date(booking.date) < new Date() || booking.status === 'completed'
+  );
+  
+  return (
+    <div className="container mx-auto py-8">
+      <h1 className="text-3xl font-bold mb-6">Your Dashboard</h1>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">Your Vehicles</h2>
+          <VehicleList vehicles={userVehicles} />
+        </section>
+        
+        <section>
+          <h2 className="text-2xl font-semibold mb-4">Upcoming Appointments</h2>
+          <UpcomingAppointments bookings={upcomingBookings} />
+        </section>
+      </div>
+      
+      <section className="mt-12">
+        <h2 className="text-2xl font-semibold mb-4">Service History</h2>
+        <BookingHistory bookings={pastBookings} />
+      </section>
+    </div>
+  );
+}
+```
+
+# Test Strategy:
+1. Test vehicle CRUD operations (add, view, edit, delete)
+2. Verify service history displays correctly with proper sorting
+3. Test upcoming appointments display and status updates
+4. Ensure proper data loading and error states
+5. Test responsive design across device sizes
+6. Verify that users can only access their own data

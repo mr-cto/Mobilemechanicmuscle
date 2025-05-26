@@ -1,0 +1,126 @@
+# Task ID: 11
+# Title: Implement Basic Admin Dashboard
+# Status: pending
+# Dependencies: 2, 3, 10
+# Priority: medium
+# Description: Create a simple admin dashboard for staff to view and manage all bookings.
+# Details:
+1. Create `/admin/dashboard` route with authentication protection
+2. Implement admin-only middleware to restrict access
+3. Create a table view of all bookings with filtering and sorting
+4. Add functionality to update booking status (pending, confirmed, completed, cancelled)
+5. Include basic customer information and service details
+
+Example admin dashboard implementation:
+```jsx
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { format } from 'date-fns';
+
+export default function AdminDashboard() {
+  const { data: session } = useSession();
+  const [bookings, setBookings] = useState([]);
+  const [filter, setFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    fetchBookings();
+  }, [filter]);
+
+  const fetchBookings = async () => {
+    const response = await fetch(`/api/admin/bookings?status=${filter}`);
+    const data = await response.json();
+    setBookings(data.bookings);
+  };
+
+  const updateBookingStatus = async (bookingId, newStatus) => {
+    await fetch(`/api/admin/bookings/${bookingId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: newStatus })
+    });
+    fetchBookings();
+  };
+
+  const filteredBookings = bookings.filter(booking => 
+    booking.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    booking.customer.email.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  return (
+    <div className="container mx-auto py-8">
+      <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
+      
+      <div className="flex gap-4 mb-6">
+        <Input 
+          placeholder="Search by customer name or email" 
+          value={searchQuery} 
+          onChange={(e) => setSearchQuery(e.target.value)} 
+          className="max-w-sm"
+        />
+        <Select value={filter} onValueChange={setFilter}>
+          <SelectTrigger className="w-40">
+            <SelectValue placeholder="Filter by status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Bookings</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="confirmed">Confirmed</SelectItem>
+            <SelectItem value="completed">Completed</SelectItem>
+            <SelectItem value="cancelled">Cancelled</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Date & Time</TableHead>
+            <TableHead>Customer</TableHead>
+            <TableHead>Service</TableHead>
+            <TableHead>Vehicle</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {filteredBookings.map(booking => (
+            <TableRow key={booking.id}>
+              <TableCell>{format(new Date(booking.date), 'MMM d, yyyy')} at {booking.time}</TableCell>
+              <TableCell>
+                <div>{booking.customer.name}</div>
+                <div className="text-sm text-muted-foreground">{booking.customer.email}</div>
+              </TableCell>
+              <TableCell>{booking.service.name}</TableCell>
+              <TableCell>{booking.vehicle.year} {booking.vehicle.make} {booking.vehicle.model}</TableCell>
+              <TableCell>{booking.status}</TableCell>
+              <TableCell>
+                <Select onValueChange={(value) => updateBookingStatus(booking.id, value)} defaultValue={booking.status}>
+                  <SelectTrigger className="w-32">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="confirmed">Confirm</SelectItem>
+                    <SelectItem value="completed">Complete</SelectItem>
+                    <SelectItem value="cancelled">Cancel</SelectItem>
+                  </SelectContent>
+                </Select>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
+}
+```
+
+# Test Strategy:
+Test admin dashboard with various booking statuses and customer data. Verify filtering and search functionality works correctly. Test booking status updates. Ensure admin-only access is enforced. Test responsive design for different screen sizes.

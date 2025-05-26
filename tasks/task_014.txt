@@ -1,0 +1,67 @@
+# Task ID: 14
+# Title: Implement Email Notifications
+# Status: pending
+# Dependencies: 10, 11
+# Priority: low
+# Description: Set up email notifications for booking confirmations, reminders, and status updates.
+# Details:
+1. Install email sending library: `pnpm add nodemailer` or use a service like Resend
+2. Create email templates for different notification types:
+   - Booking confirmation
+   - Booking reminder (24 hours before)
+   - Booking status updates
+   - Account creation
+3. Implement email sending functionality in API routes
+4. Add email preferences to user settings
+
+Example email sending implementation:
+```javascript
+// lib/email.js
+import nodemailer from 'nodemailer';
+
+const transporter = nodemailer.createTransport({
+  host: process.env.EMAIL_SERVER_HOST,
+  port: process.env.EMAIL_SERVER_PORT,
+  auth: {
+    user: process.env.EMAIL_SERVER_USER,
+    pass: process.env.EMAIL_SERVER_PASSWORD,
+  },
+  secure: true,
+});
+
+export async function sendBookingConfirmation(user, booking) {
+  const { email, name } = user;
+  const { service, date, time, vehicle } = booking;
+  
+  const formattedDate = new Date(date).toLocaleDateString('en-US', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
+  
+  await transporter.sendMail({
+    from: `"Mobile Mechanic Muscle" <${process.env.EMAIL_FROM}>`,
+    to: email,
+    subject: 'Your Booking Confirmation',
+    html: `
+      <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+        <h1>Booking Confirmed</h1>
+        <p>Hello ${name},</p>
+        <p>Your booking has been confirmed for the following service:</p>
+        <div style="background-color: #f4f4f4; padding: 16px; border-radius: 4px; margin: 16px 0;">
+          <p><strong>Service:</strong> ${service.name}</p>
+          <p><strong>Date:</strong> ${formattedDate}</p>
+          <p><strong>Time:</strong> ${time}</p>
+          <p><strong>Vehicle:</strong> ${vehicle.year} ${vehicle.make} ${vehicle.model}</p>
+        </div>
+        <p>If you need to make any changes to your booking, please log in to your account or contact us directly.</p>
+        <p>Thank you for choosing Mobile Mechanic Muscle!</p>
+      </div>
+    `,
+  });
+}
+```
+
+# Test Strategy:
+Test email sending functionality with various email templates. Verify emails are sent at the appropriate times (booking creation, status updates). Test email content for correctness and formatting. Ensure emails are not sent in test environments unless explicitly configured to do so.

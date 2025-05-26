@@ -2,7 +2,20 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { FaOilCan, FaCarCrash, FaSyncAlt, FaCarBattery } from "react-icons/fa";
+import { Container } from "@/components/magicui/container";
+import { ScrollProgress } from "@/components/magicui/scroll-progress";
+import { InteractiveGrid } from "@/components/magicui/interactive-grid";
+import { MorphingText } from "@/components/magicui/morphing-text";
+import { ShimmerButton } from "@/components/magicui/shimmer-button";
+import { MagicCard } from "@/components/magicui/magic-card";
+import GoogleReviews from "@/components/GoogleReviews";
+import {
+  FaOilCan,
+  FaCarCrash,
+  FaSyncAlt,
+  FaCarBattery,
+  FaPlayCircle,
+} from "react-icons/fa";
 
 interface FormData {
   fullName: string;
@@ -34,7 +47,9 @@ export default function Home() {
   }, []);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
   ) => {
     const { name, value } = e.target;
     if (name === "type") {
@@ -52,9 +67,7 @@ export default function Home() {
         ...prev,
         vehicleIdentification: {
           ...prev.vehicleIdentification,
-          ...(name === "vin" && { value: value }),
-          ...(name === "plate" && { value: value }),
-          ...(name === "state" && { state: value }),
+          [name]: value,
         },
       }));
     } else {
@@ -69,407 +82,340 @@ export default function Home() {
 
     try {
       const res = await fetch("/api/send-form", {
+        // Assuming this is the correct endpoint for the hero form
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          fullName: formData.fullName,
+          email: formData.email,
+          serviceRequest: formData.serviceRequest,
+          // Include vehicleInfo if you add it to the FormData interface and state
+        }),
       });
 
       if (res.ok) {
-        setStatus("Sent successfully");
+        setStatus("Sent successfully! We'll be in touch.");
         setFormData({
           fullName: "",
-          vehicleIdentification: { type: "vin", value: "", state: "" },
+          vehicleIdentification: { type: "vin", value: "", state: "" }, // Reset if needed
           email: "",
           serviceRequest: "",
         });
       } else {
-        setStatus("Failed to send");
+        setStatus("Failed to send. Please try again.");
       }
     } catch (err) {
-      setStatus("Failed to send");
+      setStatus("Failed to send. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4"
-      style={{ backgroundColor: "#f3f4f6" }}
-    >
-      <div
-        className={`w-full max-w-md mb-6 flex justify-center transition-all duration-500 ease-out transform ${
-          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-        }`}
-      >
-        <Image
-          src="/assets/logo.png"
-          alt="Mobile Mechanic Muscle Logo"
-          width={200}
-          height={200}
-          className="rounded-full shadow-lg border-4"
-          style={{ borderColor: "#41e0c8" }}
-          priority
+    <div className="relative min-h-screen bg-gray-100">
+      <ScrollProgress color="#1e40af" />
+      {/* Hero Section */}
+      <div className="relative bg-gradient-to-r from-blue-900 via-blue-800 to-blue-700 text-white py-20 px-4 overflow-hidden">
+        <InteractiveGrid
+          variant="lines"
+          containerClassName="absolute inset-0 z-0"
+          className="opacity-20"
         />
-      </div>
-      <form
-        onSubmit={handleSubmit}
-        className={`bg-white shadow-md rounded px-8 pt-6 pb-8 w-full max-w-md border border-gray-200 transition-all duration-500 ease-out transform ${
-          isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-        }`}
-      >
-        <div className="text-center mb-8">
-          <h1
-            className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight mb-4"
-            style={{ color: "#222" }}
-          >
-            We come to you, we fix your car.
-          </h1>
-          <p className="text-lg md:text-xl text-gray-700 mb-6">
-            Convenient mobile automotive services directly at your location.
-          </p>
-          <a
-            href="tel:+1-555-555-5555"
-            className="inline-block bg-blue-800 hover:bg-yellow-400 hover:text-blue-900 text-white font-bold py-3 px-8 rounded-full text-xl transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95 shadow-lg"
-            style={{ backgroundColor: "#1e40af", color: "#fff" }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = "#fbbf24";
-              e.currentTarget.style.color = "#1e40af";
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = "#1e40af";
-              e.currentTarget.style.color = "#fff";
-            }}
-          >
-            CALL NOW
-          </a>
-        </div>
-        <h2
-          className="text-2xl mb-4 font-bold text-center text-gray-900"
-          style={{ color: "#222" }}
-        >
-          Service Request
-        </h2>
-        <div className="mb-4">
-          <label
-            className="block text-gray-900 text-sm font-bold mb-2"
-            htmlFor="fullName"
-            style={{ color: "#222" }}
-          >
-            Full Name
-          </label>
-          <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-900 leading-tight focus:outline-none focus:shadow-outline border-gray-300 focus:border-blue-800 transition duration-300"
-            id="fullName"
-            name="fullName"
-            type="text"
-            value={formData.fullName}
-            onChange={handleChange}
-            required
-            style={{ color: "#222" }}
-          />
-        </div>
-        <div className="mb-4">
-          <span
-            className="block text-gray-900 text-sm font-bold mb-2"
-            style={{ color: "#222" }}
-          >
-            Vehicle Identification
-          </span>
-          <div
-            className="flex gap-4 mb-2"
-            role="radiogroup"
-            aria-label="Vehicle Identification"
-          >
-            <label
-              className={`flex-1 flex items-center justify-center cursor-pointer px-4 py-2 rounded-lg border transition-all duration-300 ease-in-out select-none transform hover:scale-105 active:scale-95
-                ${
-                  formData.vehicleIdentification.type === "vin"
-                    ? "border-blue-800 bg-blue-800 text-white shadow font-semibold"
-                    : "border-gray-300 bg-white text-gray-900 hover:border-blue-600"
-                }
-                focus:outline-none focus:ring-2 focus:ring-blue-400
-              `}
-              tabIndex={0}
-              htmlFor="vin-radio"
-              style={
-                formData.vehicleIdentification.type === "vin"
-                  ? {
-                      backgroundColor: "#1e40af",
-                      borderColor: "#1e40af",
-                      color: "#fff",
-                    }
-                  : { color: "#222" }
-              }
-            >
-              <input
-                id="vin-radio"
-                type="radio"
-                name="type"
-                value="vin"
-                checked={formData.vehicleIdentification.type === "vin"}
-                onChange={handleChange}
-                className="sr-only"
-                aria-checked={formData.vehicleIdentification.type === "vin"}
+        <Container className="flex flex-col md:flex-row items-center justify-between relative z-10">
+          {/* Left Side - Headline and CTA */}
+          <div className="w-full md:w-1/2 text-center md:text-left mb-10 md:mb-0">
+            <h1 className="text-5xl md:text-6xl font-extrabold leading-tight mb-4">
+              <MorphingText
+                texts={[
+                  "Expert mobile mechanics",
+                  "Professional auto repair",
+                  "Your car, our priority",
+                  "Service at your location",
+                ]}
+                duration={3000}
+                className="bg-clip-text text-transparent bg-gradient-to-r from-white to-yellow-300"
               />
-              <span>VIN</span>
-            </label>
-            <label
-              className={`flex-1 flex items-center justify-center cursor-pointer px-4 py-2 rounded-lg border transition-all duration-300 ease-in-out select-none transform hover:scale-105 active:scale-95
-                ${
-                  formData.vehicleIdentification.type === "plate"
-                    ? "border-blue-800 bg-blue-800 text-white shadow font-semibold"
-                    : "border-gray-300 bg-white text-gray-900 hover:border-blue-600"
-                }
-                focus:outline-none focus:ring-2 focus:ring-blue-400
-              `}
-              tabIndex={0}
-              htmlFor="plate-radio"
-              style={
-                formData.vehicleIdentification.type === "plate"
-                  ? {
-                      backgroundColor: "#1e40af",
-                      borderColor: "#1e40af",
-                      color: "#fff",
-                    }
-                  : { color: "#222" }
-              }
-            >
-              <input
-                id="plate-radio"
-                type="radio"
-                name="type"
-                value="plate"
-                checked={formData.vehicleIdentification.type === "plate"}
-                onChange={handleChange}
-                className="sr-only"
-                aria-checked={formData.vehicleIdentification.type === "plate"}
-              />
-              <span>Plate + State</span>
-            </label>
+            </h1>
+            <p className="text-xl md:text-2xl mb-8 animate-fadeInUp delay-100">
+              We come to you, we fix your car. Get expert service at your
+              location.
+            </p>
+            <div className="flex justify-center md:justify-start items-center space-x-4 animate-fadeInUp delay-200">
+              <ShimmerButton
+                onClick={() => (window.location.href = "/book")}
+                className="bg-yellow-400 text-blue-900 font-bold py-3 px-8 rounded-full text-lg"
+              >
+                Book Online Now
+              </ShimmerButton>
+              <button className="flex items-center bg-transparent text-white font-semibold py-3 px-6 rounded-full text-lg transition-colors duration-300 hover:bg-white hover:text-blue-800">
+                <FaPlayCircle className="mr-2" /> Watch Intro
+              </button>
+            </div>
           </div>
-          <div className="transition-all duration-500 ease-in-out min-h-[112px] overflow-hidden">
-            {formData.vehicleIdentification.type === "vin" ? (
-              <div className="animate-fadeIn transition-all duration-300">
+
+          {/* Right Side - Form */}
+          <div className="w-full md:w-1/3 bg-white p-8 rounded-lg shadow-xl animate-fadeInRight delay-300">
+            <h2 className="text-2xl font-bold text-gray-800 text-center mb-6">
+              Get Your Car Repaired - We Come to You
+            </h2>
+            <form onSubmit={handleSubmit}>
+              <div className="mb-4">
                 <label
-                  className="block text-gray-900 text-sm font-bold mb-2"
-                  htmlFor="vin"
-                  style={{ color: "#222" }}
+                  htmlFor="fullName"
+                  className="block text-gray-700 text-sm font-bold mb-2"
                 >
-                  VIN
+                  Your name
                 </label>
                 <input
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-900 leading-tight focus:outline-none focus:shadow-outline border-gray-300 focus:border-blue-800 transition duration-300"
-                  id="vin"
-                  name="vin"
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  id="fullName"
+                  name="fullName"
                   type="text"
-                  value={formData.vehicleIdentification.value}
+                  value={formData.fullName}
                   onChange={handleChange}
                   required
-                  style={{ color: "#222" }}
                 />
               </div>
-            ) : (
-              <div className="animate-fadeIn transition-all duration-300">
-                <div className="mb-2">
-                  <label
-                    className="block text-gray-900 text-sm font-bold mb-2"
-                    htmlFor="plate"
-                    style={{ color: "#222" }}
-                  >
-                    Plate Number
-                  </label>
-                  <input
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-900 leading-tight focus:outline-none focus:shadow-outline border-gray-300 focus:border-blue-800 transition duration-300"
-                    id="plate"
-                    name="plate"
-                    type="text"
-                    value={formData.vehicleIdentification.value}
-                    onChange={handleChange}
-                    required
-                    style={{ color: "#222" }}
-                  />
-                </div>
-                <div>
-                  <label
-                    className="block text-gray-900 text-sm font-bold mb-2"
-                    htmlFor="state"
-                    style={{ color: "#222" }}
-                  >
-                    State
-                  </label>
-                  <input
-                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-900 leading-tight focus:outline-none focus:shadow-outline border-gray-300 focus:border-blue-800 transition duration-300"
-                    id="state"
-                    name="state"
-                    type="text"
-                    value={formData.vehicleIdentification.state}
-                    onChange={handleChange}
-                    required
-                    style={{ color: "#222" }}
-                  />
-                </div>
+              <div className="mb-4">
+                <label
+                  htmlFor="email"
+                  className="block text-gray-700 text-sm font-bold mb-2"
+                >
+                  Your email
+                </label>
+                <input
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  id="email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                />
               </div>
-            )}
+              <div className="mb-4">
+                <label
+                  htmlFor="phone"
+                  className="block text-gray-700 text-sm font-bold mb-2"
+                >
+                  Phone number
+                </label>
+                <input
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  id="phone"
+                  name="phone"
+                  type="tel"
+                  // value={...} // Add to FormData if needed
+                  // onChange={...}
+                  placeholder="e.g., (123) 456-7890"
+                />
+              </div>
+              <div className="mb-6">
+                <label
+                  htmlFor="serviceRequest"
+                  className="block text-gray-700 text-sm font-bold mb-2"
+                >
+                  Select Services
+                </label>
+                <select
+                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  id="serviceRequest"
+                  name="serviceRequest"
+                  value={formData.serviceRequest}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Select a service</option>
+                  <option value="mobile-repairs">Mobile Repairs</option>
+                  <option value="diagnostics">Diagnostic Services</option>
+                  <option value="oil-change">Oil Change</option>
+                  <option value="brake-repair">Brake Service</option>
+                  <option value="tire-service">Tire Service</option>
+                  <option value="battery">Battery Service</option>
+                  <option value="cosmetic">
+                    Cosmetic Enhancements & Detailing
+                  </option>
+                  <option value="performance">Performance Upgrades</option>
+                  <option value="transmission">Transmission Service</option>
+                  <option value="electrical">Electrical Repairs</option>
+                  <option value="engine">Engine Repairs</option>
+                  <option value="other">Other Services</option>
+                </select>
+              </div>
+              <div className="flex items-center justify-center">
+                <button
+                  className={`bg-orange-500 hover:bg-orange-600 text-white font-bold py-3 px-8 rounded focus:outline-none focus:shadow-outline transition-all duration-300 ease-in-out transform hover:scale-105 w-full ${
+                    isSubmitting ? "opacity-75 cursor-not-allowed" : ""
+                  }`}
+                  type="submit"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <span className="inline-block animate-pulse">
+                      Sending...
+                    </span>
+                  ) : (
+                    "MAKE APPOINTMENT"
+                  )}
+                </button>
+              </div>
+              {status && (
+                <p
+                  className={`text-sm mt-4 text-center ${
+                    status.includes("success")
+                      ? "text-green-600"
+                      : "text-red-600"
+                  }`}
+                >
+                  {status}
+                </p>
+              )}
+            </form>
           </div>
-        </div>
-        <div className="mb-4">
-          <label
-            className="block text-gray-900 text-sm font-bold mb-2"
-            htmlFor="email"
-            style={{ color: "#222" }}
-          >
-            Email
-          </label>
-          <input
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-900 leading-tight focus:outline-none focus:shadow-outline border-gray-300 focus:border-blue-800 transition duration-300"
-            id="email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            style={{ color: "#222" }}
-          />
-        </div>
-        <div className="mb-6">
-          <label
-            className="block text-gray-900 text-sm font-bold mb-2"
-            htmlFor="serviceRequest"
-            style={{ color: "#222" }}
-          >
-            Service Request
-          </label>
-          <textarea
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-900 leading-tight focus:outline-none focus:shadow-outline border-gray-300 focus:border-blue-800 transition duration-300"
-            id="serviceRequest"
-            name="serviceRequest"
-            value={formData.serviceRequest}
-            onChange={handleChange}
-            required
-            style={{ color: "#222" }}
-          />
-        </div>
-        <div className="flex items-center justify-between">
-          <button
-            className={`relative bg-blue-800 hover:bg-yellow-400 hover:text-blue-900 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline transition-all duration-300 ease-in-out transform hover:scale-105 active:scale-95 ${
-              isSubmitting ? "opacity-75" : ""
-            }`}
-            type="submit"
-            style={{ backgroundColor: "#1e40af", color: "#fff" }}
-            onMouseOver={(e) => {
-              e.currentTarget.style.backgroundColor = "#fbbf24";
-              e.currentTarget.style.color = "#1e40af";
-            }}
-            onMouseOut={(e) => {
-              e.currentTarget.style.backgroundColor = "#1e40af";
-              e.currentTarget.style.color = "#fff";
-            }}
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? (
-              <>
-                <span className="inline-block animate-pulse">Sending...</span>
-              </>
-            ) : (
-              "Submit"
-            )}
-          </button>
-          <p
-            className={`text-sm ${
-              status === "Sent successfully"
-                ? "text-green-600"
-                : "text-gray-600"
-            } transition-all duration-300`}
-            data-testid="status"
-          >
-            {status}
-          </p>
-        </div>
-      </form>
+        </Container>
+      </div>
 
-      <div
-        className={`mt-6 w-full max-w-md text-center text-gray-700 transition-all duration-700 ease-out transform ${
-          isVisible
-            ? "opacity-100 translate-y-0 delay-200"
-            : "opacity-0 translate-y-10"
-        }`}
-      >
+      {/* Statistics Section */}
+      <MagicCard className="w-full py-12" gradientOpacity={0.2}>
+        <div className="bg-yellow-300/90 backdrop-blur-sm w-full">
+          <Container className="flex flex-col md:flex-row justify-around items-center text-gray-800">
+            <div className="mb-6 md:mb-0">
+              <p className="text-4xl font-bold">1.2K+</p>
+              <p className="text-lg">Satisfied Customer</p>
+            </div>
+            <div>
+              <p className="text-4xl font-bold">2K+</p>
+              <p className="text-lg">Completed Projects</p>
+            </div>
+          </Container>
+        </div>
+      </MagicCard>
+
+      {/* Existing content below the hero/stats - adjust styling as needed */}
+      <Container className="mt-12 p-4">
         {/* Service Icons */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <div className="flex flex-col items-center">
-            <FaOilCan className="w-12 h-12 text-blue-800 mb-2" />
-            <p className="text-sm font-semibold">Oil Change</p>
-          </div>
-          <div className="flex flex-col items-center">
-            <FaCarCrash className="w-12 h-12 text-blue-800 mb-2" />
-            <p className="text-sm font-semibold">Brake Repair</p>
-          </div>
-          <div className="flex flex-col items-center">
-            <FaSyncAlt className="w-12 h-12 text-blue-800 mb-2" />
-            <p className="text-sm font-semibold">Tire Rotation</p>
-          </div>
-          <div className="flex flex-col items-center">
-            <FaCarBattery className="w-12 h-12 text-blue-800 mb-2" />
-            <p className="text-sm font-semibold">Battery Check</p>
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6">
+            Our Services Include
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <MagicCard
+              className="flex flex-col items-center p-4 bg-white/80 backdrop-blur-sm rounded-lg"
+              gradientOpacity={0.15}
+            >
+              <div className="flex flex-col items-center">
+                <FaOilCan className="w-16 h-16 text-blue-800 mb-3" />
+                <p className="text-xl font-semibold text-gray-800">
+                  Oil Change
+                </p>
+              </div>
+            </MagicCard>
+
+            <MagicCard
+              className="flex flex-col items-center p-4 bg-white/80 backdrop-blur-sm rounded-lg"
+              gradientOpacity={0.15}
+            >
+              <div className="flex flex-col items-center">
+                <FaCarCrash className="w-16 h-16 text-blue-800 mb-3" />
+                <p className="text-xl font-semibold text-gray-800">
+                  Brake Repair
+                </p>
+              </div>
+            </MagicCard>
+
+            <MagicCard
+              className="flex flex-col items-center p-4 bg-white/80 backdrop-blur-sm rounded-lg"
+              gradientOpacity={0.15}
+            >
+              <div className="flex flex-col items-center">
+                <FaSyncAlt className="w-16 h-16 text-blue-800 mb-3" />
+                <p className="text-xl font-semibold text-gray-800">
+                  Tire Rotation
+                </p>
+              </div>
+            </MagicCard>
+
+            <MagicCard
+              className="flex flex-col items-center p-4 bg-white/80 backdrop-blur-sm rounded-lg"
+              gradientOpacity={0.15}
+            >
+              <div className="flex flex-col items-center">
+                <FaCarBattery className="w-16 h-16 text-blue-800 mb-3" />
+                <p className="text-xl font-semibold text-gray-800">
+                  Battery Check
+                </p>
+              </div>
+            </MagicCard>
           </div>
         </div>
 
-        {/* Testimonial */}
-        <div className="bg-blue-100 p-6 rounded-lg shadow-inner mb-8">
-          <p className="text-gray-800 italic mb-4">
-            "Mobile Mechanic Muscle saved my day! Quick, professional, and they
-            fixed my car right in my driveway. Highly recommend!"
-          </p>
-          <p className="text-gray-900 font-semibold">- Happy Customer</p>
+        {/* Google Reviews */}
+        <div className="mb-12">
+          <h2 className="text-3xl font-bold text-gray-900 mb-6 text-center">
+            What Our Customers Say
+          </h2>
+          <GoogleReviews />
         </div>
 
         {/* Trust-Badge Strip */}
-        <div className="flex justify-around items-center mb-8">
-          <Image
-            src="/assets/logo.png"
-            alt="Trust Badge 1"
-            width={60}
-            height={60}
-            className="opacity-75"
-          />
-          <Image
-            src="/assets/logo.png"
-            alt="Trust Badge 2"
-            width={60}
-            height={60}
-            className="opacity-75"
-          />
-          <Image
-            src="/assets/logo.png"
-            alt="Trust Badge 3"
-            width={60}
-            height={60}
-            className="opacity-75"
-          />
-        </div>
+        <MagicCard className="mb-12" gradientOpacity={0.15}>
+          <div className="text-center p-8 bg-white/80 backdrop-blur-sm">
+            <h2 className="text-3xl font-bold text-gray-900 mb-6">
+              Trusted By
+            </h2>
+            <div className="flex justify-around items-center flex-wrap gap-6">
+              <Image
+                src="/assets/logo.png" // Replace with actual trust badge images
+                alt="Trust Badge 1"
+                width={80}
+                height={80}
+                className="opacity-75"
+              />
+              <Image
+                src="/assets/logo.png"
+                alt="Trust Badge 2"
+                width={80}
+                height={80}
+                className="opacity-75"
+              />
+              <Image
+                src="/assets/logo.png"
+                alt="Trust Badge 3"
+                width={80}
+                height={80}
+                className="opacity-75"
+              />
+              {/* Add more trust badges as needed */}
+            </div>
+          </div>
+        </MagicCard>
 
-        <p className="mb-2">
-          Mobile Mechanic Muscle provides convenient mobile automotive services
-          including repairs, cosmetic enhancements, and performance upgrades
-          directly at your location.
-        </p>
-        <p className="text-sm">
-          Visit our{" "}
-          <a
-            href="https://mobilemechanicmusclenearme.com/en-us/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-800 hover:text-yellow-400 font-semibold transition-colors duration-300"
-            style={{ color: "#1e40af" }}
-          >
-            official website
-          </a>{" "}
-          for more information about our services.
-        </p>
-      </div>
+        {/* Existing descriptive text */}
+        <MagicCard className="max-w-3xl mx-auto" gradientOpacity={0.1}>
+          <div className="text-center text-gray-700 p-8 bg-white/80 backdrop-blur-sm rounded-lg">
+            <p className="mb-4 text-lg">
+              Mobile Mechanic Muscle provides convenient mobile automotive
+              services including repairs, cosmetic enhancements, and performance
+              upgrades directly at your location.
+            </p>
+            <p className="text-md">
+              Visit our{" "}
+              <a
+                href="https://mobilemechanicmusclenearme.com/en-us/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-800 hover:text-yellow-400 font-semibold transition-colors duration-300"
+                style={{ color: "#1e40af" }}
+              >
+                official website
+              </a>{" "}
+              for more information about our services.
+            </p>
+          </div>
+        </MagicCard>
+      </Container>
     </div>
   );
 }
